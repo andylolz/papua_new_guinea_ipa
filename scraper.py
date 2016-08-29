@@ -24,7 +24,7 @@ def get_payload_and_post_url(url, cookies):
     r = requests.get(url, cookies=cookies)
     time.sleep(0.5)
     html = r.text
-    soup = bs(html)
+    soup = bs(html, "html.parser")
     payload = {
       "_CBHTMLFRAG_": "true",
       "_CBNAME_": "buttonPush",
@@ -50,7 +50,7 @@ def run_query(query, url, cookies, payload):
         cookies=cookies,
     )
     time.sleep(0.5)
-    return bs(r.text)
+    return bs(r.text, "html.parser")
 
 def find_by_id(id_, soup):
     sec_soup = soup.find(id=id_)
@@ -80,7 +80,7 @@ def get_general_details(entity_number, cb_node, payload):
     }
     r = requests.post(url, data=p, cookies=cookies)
     time.sleep(0.5)
-    soup = bs(r.text)
+    soup = bs(r.text, "html.parser")
     details = {
         "Entity Name": find_by_id("Entities[0]/EntityNames[0]/ATTRIBUTE/Name", soup),
         "Status": find_by_id("Entities[0]/ATTRIBUTE/Status", soup),
@@ -109,7 +109,7 @@ def get_tab_contents(tab_url, tab_index, tab_payload, cookies):
     tab_payload["_CBVALUE_"] = tab_index
     r = requests.post(tab_url, data=tab_payload, cookies=cookies)
     time.sleep(0.5)
-    return bs(r.text)
+    return bs(r.text, "html.parser")
 
 def get_address_details(tab_url, tab_payload, cookies, details):
     soup = get_tab_contents(tab_url, 1, tab_payload, cookies)
@@ -197,7 +197,7 @@ for entity_number in entity_numbers:
         "_CBNAME_": "tabSelect",
         "_CBASYNCUPDATE_": "true",
         "_VIKEY_": payload["_VIKEY_"],
-        "_CBNODE_": bs(html).find(class_="appTabs")["id"][4:],
+        "_CBNODE_": bs(html, "html.parser").find(class_="appTabs")["id"][4:],
         "_CBHTMLFRAGID_": get_fragment_id(html),
     }
     details = get_address_details(tab_url, tab_payload, cookies, details)
