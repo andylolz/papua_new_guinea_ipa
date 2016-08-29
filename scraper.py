@@ -187,10 +187,10 @@ for entity_number in entity_numbers:
         continue
     link_soup = link_soup.parent
     cb_node = link_soup["id"][4:]
-    details, html, url = get_general_details(entity_number, cb_node, payload)
+    details, html, redirect_url = get_general_details(entity_number, cb_node, payload)
     details["Entity Number"] = entity_number
     # construct the new URL
-    id_ = re.search(r'\?id=([^&]+)&|$', url).group(1)
+    id_ = re.search(r'\?id=([^&]+)&|$', redirect_url).group(1)
     tab_url = "https://www.ipa.gov.pg/pngcompanies/viewInstance/update.html?id={}".format(id_)
     # get some other bits we need
     tab_payload = {
