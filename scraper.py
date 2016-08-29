@@ -166,14 +166,14 @@ def get_secretary_details(tab_url, tab_payload, cookies, details):
     soup = get_tab_contents(tab_url, 3, tab_payload, cookies)
     secretary_count = 0
     for shareholder_soup in soup.find_all(class_="appDialogRepeaterRowContent"):
-        key = "Sec{:02d}".format(shareholder_count + 1)
+        key = "Sec{:02d}".format(secretary_count + 1)
         details[key] = find_by_label('Name', shareholder_soup)
         details["{}Address".format(key)] = find_by_label('Residential Address', shareholder_soup)
         details["{}PostalAddress".format(key)] = find_by_label('Postal Address', shareholder_soup)
         details["{}Nationality".format(key)] = find_by_label('Nationality', shareholder_soup)
         details["{}Start".format(key)] = find_by_label('Appointed Date', shareholder_soup)
         details["{}End".format(key)] = find_by_label('Ceased', shareholder_soup)
-        shareholder_count += 1
+        secretary_count += 1
     return details
 
 url, cookies = get_redirect_and_cookie(companies_url)
