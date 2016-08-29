@@ -2,6 +2,7 @@ import re
 import time
 
 import requests
+import scraperwiki
 from bs4 import BeautifulSoup as bs
 
 
