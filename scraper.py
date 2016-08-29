@@ -131,55 +131,71 @@ def get_address_details(tab_url, tab_payload, cookies, details):
             prev_address_count += 1
     return details
 
-def get_director_details(tab_url, tab_payload, cookies, details):
+def get_director_details(tab_url, tab_payload, cookies, entity_number):
     soup = get_tab_contents(tab_url, 2, tab_payload, cookies)
     director_count = 0
     while True:
-        key = "Director{:02d}".format(director_count + 1)
+        data = {}
+        data["Entity Number"] = entity_number
+        data["Director Number"] = director_count + 1
+
         director_name = find_by_id("Entities[0]/Directors[{}]".format(director_count), soup)
         if director_name == "":
             break
-        details[key] = director_name
-        details["Director{:02d}Residential Address".format(director_count + 1)] = find_by_id("Entities[0]/Directors[{}]/EntityRolePhysicalAddresses[0]".format(director_count), soup)
-        details["Director{:02d}Postal Address".format(director_count + 1)] = find_by_id("Entities[0]/Directors[{}]/EntityRolePostalAddresses[0]".format(director_count), soup)
-        details["Director{:02d}Nationality".format(director_count + 1)] = find_by_id("Entities[0]/Directors[{}]/ATTRIBUTE/RoleCountryCode".format(director_count), soup)
-        details["Director{:02d}Start".format(director_count + 1)] = find_by_id("Entities[0]/Directors[{}]/ATTRIBUTE/AppointedDate".format(director_count), soup)
-        details["Director{:02d}End".format(director_count + 1)] = find_by_id("Entities[0]/Directors[{}]/ATTRIBUTE/CeasedDate".format(director_count), soup)
+        data["Name"] = director_name
+        data["Residential Address"] = find_by_id("Entities[0]/Directors[{}]/EntityRolePhysicalAddresses[0]".format(director_count), soup)
+        data["Postal Address"] = find_by_id("Entities[0]/Directors[{}]/EntityRolePostalAddresses[0]".format(director_count), soup)
+        data["Nationality"] = find_by_id("Entities[0]/Directors[{}]/ATTRIBUTE/RoleCountryCode".format(director_count), soup)
+        data["Start"] = find_by_id("Entities[0]/Directors[{}]/ATTRIBUTE/AppointedDate".format(director_count), soup)
+        data["End"] = find_by_id("Entities[0]/Directors[{}]/ATTRIBUTE/CeasedDate".format(director_count), soup)
         director_count += 1
-    return details
 
-def get_shareholder_details(tab_url, tab_payload, cookies, details):
+        scraperwiki.sqlite.save(unique_keys=['Entity Number', 'Director Number'], data=data, table_name="directors")
+
+def get_shareholder_details(tab_url, tab_payload, cookies, details, entity_number):
     soup = get_tab_contents(tab_url, 3, tab_payload, cookies)
     details["Total Shares"] = find_by_id("Entities[0]/ATTRIBUTE/TotalShares", soup)
     shareholder_count = 0
     for shareholder_soup in soup.find_all(class_="appDialogRepeaterRowContent"):
-        key = "SH{:02d}".format(shareholder_count + 1)
-        details[key] = find_by_label(' Name', shareholder_soup)
-        details["{}Address".format(key)] = find_by_label('Residential or Registered Office Address', shareholder_soup)
-        details["{}PostalAddress".format(key)] = find_by_label('Postal Address', shareholder_soup)
-        details["{}Nationality/Place of Incorporation".format(key)] = find_by_label('Place of Incorporation', shareholder_soup)
-        details["{}Start".format(key)] = find_by_label('Appointed', shareholder_soup)
-        details["{}End".format(key)] = find_by_label('Ceased', shareholder_soup)
+        data = {}
+        data["Entity Number"] = entity_number
+        data["Shareholder Number"] = shareholder_count + 1
+
+        data["Name"] = find_by_label(' Name', shareholder_soup)
+        data["Address"] = find_by_label('Residential or Registered Office Address', shareholder_soup)
+        data["PostalAddress"] = find_by_label('Postal Address', shareholder_soup)
+        data["Place of Incorporation"] = find_by_label('Place of Incorporation', shareholder_soup)
+        data["Start"] = find_by_label('Appointed', shareholder_soup)
+        data["End"] = find_by_label('Ceased', shareholder_soup)
+
+        scraperwiki.sqlite.save(unique_keys=['Entity Number', 'Shareholder Number'], data=data, table_name="shareholders")
+
         shareholder_count += 1
     return details
 
-def get_secretary_details(tab_url, tab_payload, cookies, details):
+def get_secretary_details(tab_url, tab_payload, cookies, entity_number):
     soup = get_tab_contents(tab_url, 3, tab_payload, cookies)
     secretary_count = 0
     for shareholder_soup in soup.find_all(class_="appDialogRepeaterRowContent"):
-        key = "Sec{:02d}".format(secretary_count + 1)
-        details[key] = find_by_label('Name', shareholder_soup)
-        details["{}Address".format(key)] = find_by_label('Residential Address', shareholder_soup)
-        details["{}PostalAddress".format(key)] = find_by_label('Postal Address', shareholder_soup)
-        details["{}Nationality".format(key)] = find_by_label('Nationality', shareholder_soup)
-        details["{}Start".format(key)] = find_by_label('Appointed Date', shareholder_soup)
-        details["{}End".format(key)] = find_by_label('Ceased', shareholder_soup)
+        data = {}
+        data["Entity Number"] = entity_number
+        data["Secretary Number"] = secretary_count + 1
+
+        data["Name"] = find_by_label('Name', shareholder_soup)
+        data["Address"] = find_by_label('Residential Address', shareholder_soup)
+        data["PostalAddress"] = find_by_label('Postal Address', shareholder_soup)
+        data["Nationality"] = find_by_label('Nationality', shareholder_soup)
+        data["Start"] = find_by_label('Appointed Date', shareholder_soup)
+        data["End"] = find_by_label('Ceased', shareholder_soup)
+
+        scraperwiki.sqlite.save(unique_keys=['Entity Number', 'Secretary Number'], data=data, table_name="secretaries")
+
         secretary_count += 1
-    return details
 
 url, cookies = get_redirect_and_cookie(companies_url)
 payload, url = get_payload_and_post_url(url, cookies)
 for entity_number in entity_numbers:
+    print("Searching for '{}'".format(entity_number))
     soup = run_query(entity_number, url, cookies, payload)
     link_soup = soup.find(class_="appRepeaterContent").find(class_="appReceiveFocus", text=re.compile('\(' + entity_number + '\)$'))
     if not link_soup:
@@ -187,6 +203,7 @@ for entity_number in entity_numbers:
         continue
     link_soup = link_soup.parent
     cb_node = link_soup["id"][4:]
+    print("Fetching general details ...")
     details, html, redirect_url = get_general_details(entity_number, cb_node, payload)
     details["Entity Number"] = entity_number
     # construct the new URL
@@ -201,9 +218,13 @@ for entity_number in entity_numbers:
         "_CBNODE_": bs(html, "html.parser").find(class_="appTabs")["id"][4:],
         "_CBHTMLFRAGID_": get_fragment_id(html),
     }
+    print("Fetching address details ...")
     details = get_address_details(tab_url, tab_payload, cookies, details)
-    details = get_director_details(tab_url, tab_payload, cookies, details)
-    details = get_shareholder_details(tab_url, tab_payload, cookies, details)
-    details = get_secretary_details(tab_url, tab_payload, cookies, details)
+    print("Fetching director details ...")
+    get_director_details(tab_url, tab_payload, cookies, entity_number)
+    print("Fetching shareholder details ...")
+    details = get_shareholder_details(tab_url, tab_payload, cookies, details, entity_number)
+    print("Fetching secretary details ...")
+    get_secretary_details(tab_url, tab_payload, cookies, entity_number)
 
-    scraperwiki.sqlite.save(unique_keys=['Entity Number'], data=details)
+    scraperwiki.sqlite.save(unique_keys=['Entity Number'], data=details, table_name="data")
