@@ -52,15 +52,30 @@ def get_payload_and_post_url(url, cookies):
     return payload, url
 
 # Run the actual query
-def run_query(query, url, cookies, payload):
-    payload["QueryString"] = query
+def run_search(query, url, cookies, payload, attempt=1):
+    p = {k: v for k, v in payload.items()}
+    p["QueryString"] = query
     r = exec_request(
         "post",
         url,
-        data=payload,
+        data=p,
         cookies=cookies,
     )
-    return bs(r.text, "html.parser")
+    soup = bs(r.text, "html.parser")
+    link_soup = soup.find(class_="appRepeaterContent").find(class_="appReceiveFocus", text=re.compile('\(' + entity_number + '\)$'))
+    if not link_soup:
+        max_results = 200
+        if attempt == 2:
+            print("Hmm... No results found for entity '{}' in first {} results".format(entity_number, max_results))
+            return None
+        print("Hmm... No results found for entity '{}' in first 10 results. Trying {} ...".format(entity_number, max_results))
+        p["_CBNODE_"] = soup.find('select', id=re.compile('PageSize$'))['id'][4:8]
+        p["_CBNAME_"] = "pageSizeChange"
+        p["_CBVALUE_"] = max_results
+        return run_search(query, url, cookies, p, attempt+1)
+    link_soup = link_soup.parent
+    cb_node = link_soup["id"][4:]
+    return cb_node
 
 def find_by_id(id_, soup):
     sec_soup = soup.find(id=id_)
@@ -204,13 +219,9 @@ url, cookies = get_redirect_and_cookie(companies_url)
 payload, url = get_payload_and_post_url(url, cookies)
 for entity_number in entity_numbers:
     print("Searching for '{}'".format(entity_number))
-    soup = run_query(entity_number, url, cookies, payload)
-    link_soup = soup.find(class_="appRepeaterContent").find(class_="appReceiveFocus", text=re.compile('\(' + entity_number + '\)$'))
-    if not link_soup:
-        print("Hmm... No results found for entity '{}'".format(entity_number))
+    cb_node = run_search(entity_number, url, cookies, payload)
+    if not cb_node:
         continue
-    link_soup = link_soup.parent
-    cb_node = link_soup["id"][4:]
     print("Fetching general details ...")
     details, html, redirect_url = get_general_details(entity_number, cb_node, payload)
     details["Entity Number"] = entity_number
