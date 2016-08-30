@@ -192,6 +192,7 @@ def get_secretary_details(tab_url, tab_payload, cookies, entity_number):
 
         secretary_count += 1
 
+print("Doing setup stuff ...")
 url, cookies = get_redirect_and_cookie(companies_url)
 payload, url = get_payload_and_post_url(url, cookies)
 for entity_number in entity_numbers:
