@@ -15,7 +15,7 @@ def exec_request(*args, **kwargs):
             r = requests.request(*args, **kwargs)
             time.sleep(0.5)
             break
-        except requests.exceptions.ConnectionError:
+        except Exception:
             print("Error: Request failed. Retrying ...")
             time.sleep(2)
     return r
