@@ -3,3 +3,6 @@
 
 # Ignore pip env
 env/
+
+# Ignore generated csv
+*.csv
