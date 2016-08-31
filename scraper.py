@@ -196,19 +196,19 @@ def get_shareholder_details(tab_url, tab_payload, cookies, details, entity_numbe
     return details
 
 def get_secretary_details(tab_url, tab_payload, cookies, entity_number):
-    soup = get_tab_contents(tab_url, 3, tab_payload, cookies)
+    soup = get_tab_contents(tab_url, 5, tab_payload, cookies)
     secretary_count = 0
-    for shareholder_soup in soup.find_all(class_="appDialogRepeaterRowContent"):
+    for secretary_soup in soup.find_all(class_="appDialogRepeaterRowContent"):
         data = {}
         data["Entity Number"] = entity_number
         data["Secretary Number"] = secretary_count + 1
 
-        data["Name"] = find_by_label('Name', shareholder_soup)
-        data["Address"] = find_by_label('Residential Address', shareholder_soup)
-        data["PostalAddress"] = find_by_label('Postal Address', shareholder_soup)
-        data["Nationality"] = find_by_label('Nationality', shareholder_soup)
-        data["Start"] = find_by_label('Appointed Date', shareholder_soup)
-        data["End"] = find_by_label('Ceased', shareholder_soup)
+        data["Name"] = find_by_label('Name', secretary_soup)
+        data["Address"] = find_by_label('Residential Address', secretary_soup)
+        data["PostalAddress"] = find_by_label('Postal Address', secretary_soup)
+        data["Nationality"] = find_by_label('Nationality', secretary_soup)
+        data["Start"] = find_by_label('Appointed Date', secretary_soup)
+        data["End"] = find_by_label('Ceased', secretary_soup)
 
         scraperwiki.sqlite.save(unique_keys=['Entity Number', 'Secretary Number'], data=data, table_name="secretaries")
 
