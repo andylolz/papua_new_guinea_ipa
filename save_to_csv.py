@@ -22,8 +22,11 @@ for table in all_tables:
       'query': "select * from '{table}'".format(table=table)
     })
     tables[table] = r.json()
+    if r.status_code == 401:
+        print("morph.io API error: {}".format(tables[table]["error"]))
+        exit()
 
-results = {data["Entity Number"]: data for data in tables["data"]}
+results = {row["Entity Number"]: row for row in tables["data"]}
 
 print("Flattening tables ...")
 for table, entity in entities.items():
