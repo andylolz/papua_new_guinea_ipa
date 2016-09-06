@@ -183,7 +183,7 @@ def get_shareholder_details(tab_url, tab_payload, cookies, details, entity_numbe
         data["Entity Number"] = entity_number
         data["Shareholder Number"] = shareholder_count + 1
 
-        data["Name"] = find_by_label(' Name', shareholder_soup)
+        data["Name"] = find_by_label('Name', shareholder_soup)
         data["Address"] = find_by_label('Residential or Registered Office Address', shareholder_soup)
         data["PostalAddress"] = find_by_label('Postal Address', shareholder_soup)
         data["Place of Incorporation"] = find_by_label('Place of Incorporation', shareholder_soup)
