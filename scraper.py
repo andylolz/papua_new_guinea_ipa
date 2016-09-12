@@ -116,7 +116,7 @@ def get_general_details(entity_number, cb_node, payload):
     if details["Applicant"].lower() == "not supplied":
         details["Applicant"] = ""
     else:
-        details["Applicant"] = find_by_id("Entities[0]/ContactRole[0]/EntityRolePostalAddresses[0]", soup)
+        details["ApplicantAddress"] = find_by_id("Entities[0]/ContactRole[0]/EntityRolePostalAddresses[0]", soup)
     prev_name_count = 0
     name_history_soup = soup.find(class_="brViewLocalCompany-tabsBox-detailsTab-details-historicalInformationBox-nameHistoryBox")
     if name_history_soup:
