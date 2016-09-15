@@ -1,7 +1,7 @@
 import requests
 import csv
 
-morph_api_key = "YOUR API KEY HERE"
+morph_api_key = "wFTSIH61nwMjLBhphd4T"
 
 output_filename = "output.csv"
 
@@ -54,7 +54,7 @@ all_fields = set()
 for res in results:
     all_fields |= set(res.keys())
 
-fieldnames = ['Entity Number', 'Entity Name', 'Status', 'CoStart', 'CoDate', 'Main Business Sector', 'Applicant',]
+fieldnames = ['Entity Number', 'Entity Name', 'Status', 'CoStart', 'CoDate', 'Main Business Sector', 'Applicant', 'ApplicantAddress',]
 fieldnames += gen_fieldnames(['Prev Name{:02d}',], all_fields)
 fieldnames += gen_fieldnames(['RO{:02d}Address', 'RO{:02d}Start', 'RO{:02d}End',], all_fields)
 fieldnames += gen_fieldnames(['PO{:02d}Address', 'PO{:02d}Start', 'PO{:02d}End',], all_fields)
